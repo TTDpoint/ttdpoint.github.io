@@ -280,7 +280,7 @@ function render() {
         const isSub = l._submission;
         const cls = selectedId === l.id ? 'card active' : 'card';
         return `<div class="${cls}" onclick="selectLineup(${l.id})" data-id="${l.id}">
-            ${thumb ? `<img class="thumb" src="${thumb}" loading="lazy" onerror="this.style.display='none'">` : '<div class="thumb"></div>'}
+            ${thumb ? `<img class="thumb" src="${thumb}" loading="lazy" onerror="retryImage(this,3)">` : '<div class="thumb"></div>'}
             <div class="info">
                 <div class="title">${isSub ? '<span class="tag">我的投稿</span> ' : ''}${escHtml(l.title)}</div>
                 <div class="meta">
@@ -301,6 +301,17 @@ function escHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function retryImage(img, retries) {
+    const url = img.src || img.dataset.origSrc || '';
+    if (!img.dataset.origSrc) img.dataset.origSrc = url;
+    img.dataset.retryCount = (parseInt(img.dataset.retryCount)||0) + 1;
+    if (img.dataset.retryCount > retries) { img.style.display='none'; return; }
+    setTimeout(() => {
+        img.src = '';
+        img.src = img.dataset.origSrc + '?t=' + Date.now();
+    }, 500 * img.dataset.retryCount);
+}
+
 async function selectLineup(id) {
     selectedId = id;
     render();
@@ -312,10 +323,8 @@ async function selectLineup(id) {
     if (lu.images && lu.images.length > 0) {
         for (let i = 0; i < lu.images.length; i++) {
             const img = lu.images[i];
-            const src = img._blobKey ? '' : img.url;
-            const realSrc = img._blobKey ? '' : img.url; // will be resolved below
             stepsHtml += `<div class="step-box">
-                <img src="${img.url}" loading="lazy" onclick="openViewer('${img.url}')" onerror="this.parentElement.style.display='none'" data-blobkey="${img._blobKey||''}">
+                <img src="${img.url}" loading="lazy" onclick="openViewer('${img.url}')" onerror="retryImage(this,3)" data-blobkey="${img._blobKey||''}">
                 ${img.desc ? `<div class="step-desc">${escHtml(img.desc)}</div>` : ''}
             </div>`;
         }
