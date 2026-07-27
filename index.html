@@ -528,6 +528,10 @@ window.addEventListener('resize', () => {
     }
 });
 init();
+// Service Worker 注册，实现离线缓存
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+}
 </script>
 </body>
 </html>
