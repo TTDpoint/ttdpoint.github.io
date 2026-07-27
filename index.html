@@ -61,13 +61,18 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background: va
 .detail-contributor { margin-top: 20px; font-size: 12px; color: var(--text2); }
 /* Mobile */
 @media (max-width: 768px) {
-    .main { flex-direction: column; }
-    .list-panel { width: 100%; min-width: auto; max-height: 45vh; border-right: none; border-bottom: 1px solid var(--bg3); }
-    .detail-panel { flex: 1; padding: 16px; }
+    .main { flex-direction: column; position: relative; }
+    .list-panel { width: 100%; min-width: auto; max-height: none; border-right: none; border-bottom: 1px solid var(--bg3); flex: 1; overflow-y: auto; display: block; }
+    .main.detail-open .list-panel { display: none; }
+    .detail-panel { flex: 1; padding: 16px; display: none; overflow-y: auto; }
+    .main.detail-open .detail-panel { display: block; }
     .topbar { flex-wrap: wrap; }
     .step-box img { width: 100%; height: auto; max-height: 60vh; object-fit: contain; }
     .card .thumb { width: 60px; height: 40px; object-fit: cover; }
     .detail-header h2 { font-size: 18px; }
+    .mobile-back { display: none; }
+    .main.detail-open .mobile-back { display: flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--bg2); border-bottom: 1px solid var(--bg3); cursor: pointer; font-size: 14px; color: var(--accent); position: sticky; top: 0; z-index: 10; }
+    .main.detail-open .topbar { display: none; }
 }
 /* Modal */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 100; align-items: center; justify-content: center; }
@@ -118,6 +123,7 @@ body { font-family: -apple-system, "Microsoft YaHei", sans-serif; background: va
         <div class="list-count" id="listCount"></div>
         <div id="listContainer"></div>
     </div>
+    <div class="mobile-back" id="mobileBack" onclick="closeDetail()"><span>&larr;</span> 返回列表</div>
     <div class="detail-panel" id="detailPanel">
         <div class="detail-empty">选择一个点位查看详情</div>
     </div>
@@ -339,6 +345,10 @@ function observeLazyImages() {
 async function selectLineup(id) {
     selectedId = id;
     render();
+    if (window.innerWidth <= 768) {
+        document.querySelector('.main').classList.add('detail-open');
+        document.getElementById('detailPanel').scrollTop = 0;
+    }
     
     const lu = allLineups.find(l => l.id === id);
     if (!lu) return;
@@ -499,6 +509,10 @@ async function doSubmit() {
     closeSubmit();
     render();
     selectLineup(newId);
+}
+
+function closeDetail() {
+    document.querySelector('.main').classList.remove('detail-open');
 }
 init();
 </script>
